@@ -1,13 +1,18 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://hack4impacttrack2-horizon-production.up.railway.app/api';
-//const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'http://localhost:5000/api';
+// const API_BASE_URL = 'https://hack4impacttrack2-horizon-production.up.railway.app/api';
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+export const textToSpeech = async (text, lang = 'en') => {
+  const response = await apiClient.post('/tts', { text, lang }, { responseType: 'blob' });
+  return response.data;
+};
 
 export const analyzeIntent = async (text, lang, type = 'chat') => {
   const response = await apiClient.post('/analyze-intent', {

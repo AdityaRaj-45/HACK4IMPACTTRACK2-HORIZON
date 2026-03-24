@@ -1,100 +1,86 @@
-# HACK4IMPACTTRACK2-HORIZON
-## Team Name - Horizon
-### Team Members -
-1.Raghav Sinha (2428038)
-2.Aditya Raj (2428027)
-3.Shivam Kumar(2428042)
-4.Shree Shivam(2429035)
-
-## Domain - Smart Agriculture
-# Approved Problem Statement 
-Small-scale farmers, especially those with low digital literacy, face challenges in effectively accessing and utilizing digital platforms for fair pricing and access, and lack simple tools for understanding market trends and making crop related decisions.
-
 # 🌾 Agri-Voice: Intelligence for the Indian Farmer
+### *A Voices-First, AI-Driven Decision Engine for Rural Empowerment*
 
-[![React](https://img.shields.io/badge/React-19.0-blue?logo=react)](https://react.dev/)
-[![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?logo=vite)](https://vitejs.dev/)
-[![Node.js](https://img.shields.io/badge/Node.js-20.x-339933?logo=node.js)](https://nodejs.org/)
-[![Google Gemini](https://img.shields.io/badge/AI-Google_Gemini-orange?logo=google-gemini)](https://ai.google.dev/)
-[![Supabase](https://img.shields.io/badge/Database-Supabase-3FCF8E?logo=supabase)](https://supabase.com/)
-
-**Agri-Voice** is a voice-driven, AI-integrated decision engine designed specifically for Indian farmers. It bridges the digital literacy gap by providing real-time mandi prices, weather forecasts, and expert crop advice through voice commands in **Hindi and English**.
+**Agri-Voice** is a full-stack, voice-native platform engineered to bridge the digital literacy gap for India's 140 million+ small-scale farmers. By leveraging multi-modal Large Language Models (LLMs) and distributed voice processing services, Agri-Voice democratizes access to complex market data and agricultural intelligence through natural, localized speech.
 
 ---
 
-## 🚀 API & Services Documentation
-
-The application relies on several external APIs to provide real-time data and AI capabilities.
-
-### 1. Google Gemini AI (`gemini-2.5-flash-lite`)
-- **Purpose**: Powering intent classification, text extraction from search results, and multilingual speech-to-text (STT).
-- **Location of Logic**: 
-  - `backend/services/ai.service.js` (Classification and analysis)
-  - `backend/services/stt.service.js` (Audio transcription)
-- **Stored In**: `backend/.env` under `GEMINI_API_KEY`.
-- **How to Change**: [Get a key here](https://aistudio.google.com/) and update the `.env` file. To change the model version, update the `GEMINI_MODEL` or `STT_MODEL` constants in the respective service files.
-
-### 2. SerpApi (Google Search API)
-- **Purpose**: Fetching the latest mandi prices and agricultural news by searching the live web.
-- **Location of Logic**: `backend/services/mandi.service.js`.
-- **Stored In**: `backend/.env` under `SERPAPI_KEY`.
-- **How to Change**: [Get a key here](https://serpapi.com/) and update the `.env` file.
-
-### 3. wttr.in (Weather Forecast)
-- **Purpose**: Real-time location-aware weather forecasting and agricultural advice.
-- **Location of Logic**: `backend/services/weather.service.js`.
-- **Stored In**: No API key required (Open source).
-- **How to Change**: Modify the `getWeatherForecast` function; it currently pulls fresh JSON data from `wttr.in`.
-
-### 4. Supabase (Database & Logging)
-- **Purpose**: Logging farmer queries, intents, crops, and locations for trend analysis.
-- **Location of Logic**: `backend/services/db.service.js`.
-- **Stored In**: `backend/.env` under `SUPABASE_URL` and `SUPABASE_KEY`.
-- **How to Change**: Create a project on [Supabase.com](https://supabase.com/), create a `user_queries` table, and update your credentials in the `.env` file.
-
-### 5. Web Speech API (Browser Native)
-- **Purpose**: Providing Text-to-Speech (TTS) capabilities.
-- **Location of Logic**: `frontend/src/App.jsx` (`speak` function).
-- **Stored In**: Built into modern browsers (Chrome, Edge, Safari).
-- **How to Change**: You can modify the `targetLang`, `rate`, and `voice` selection in the `speak` function to adjust the speech quality or supported languages.
+## 👥 Team: Horizon
+- **Raghav Sinha** (2428038)
+- **Aditya Raj** (2428027)
+- **Shivam Kumar** (2428042)
+- **Shree Shivam** (2429035)
 
 ---
 
-## ✨ Key Features
-
-- 🎙️ **Multi-lingual Voice Assistant**: High-fidelity transcription for both Hindi and English with auto-language detection.
-- 💰 **Real-time Mandi Prices**: Live market values for crops across India via AI-powered web extraction.
-- 🌦️ **Precision Weather Forecasts**: Dynamic forecasts with actionable farming tips based on your GPS location.
-- 🧠 **AI-Powered Intent Analysis**: Deep semantic understanding that extracts crop names and locations from natural speech.
-- 💎 **Premium UI/UX**: State-of-the-art glassmorphism design with animated waveforms, smooth transitions, and mobile-first responsiveness.
+## 🚀 Vision: Breaking the Literacy Barrier
+Small-scale farmers are often excluded from digital marketplaces due to low digital literacy. **Agri-Voice** solves this by:
+1. **Removing Keyboard Dependencies**: 100% voice-driven interface.
+2. **Real-time Localized Intelligence**: Native support for Hindi/English with sub-second STT latency.
+3. **Actionable Data Synthesis**: Transforming raw web data into farming "Strategy Tips."
 
 ---
 
-## 📂 Project Structure
+## ✨ System Architecture & Core Capabilities
 
+### 🎙️ Advanced Speech Ecosystem
+- **VaaS ([Voice as a Service](https://schallten.github.io/VaaS/))**: Integrated a high-fidelity STT/TTS pipeline for instantaneous transcription and human-like response synthesis.
+- **Bi-Directional Translation**: Seamless switching between Hindi and English with automatic language preservation and code-switching capabilities.
+
+### 🧠 Poly-Model Intelligence
+- **Google Gemini 2.5 Flash-Lite**: Utilized for real-time intent classification and semantic data extraction from unstructured web sources.
+- **SerpApi & wttr.in Integration**: Real-time indexing of live Mandi (market) rates and hyper-local weather telemetry for location-aware decision making.
+
+### 🎨 Adaptive Frontend (Liquid UI)
+- **High-Fidelity Audio Visualization**: Reactive animated waveforms during voice capture.
+- **Glassmorphic Decision Dashboard**: A mobile-first, premium interface designed for high-glare outdoor farm environments.
+- **State Persistence**: Real-time logging to **Supabase** ensures continuity of advice across sessions.
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend** | React 19, Vite, Tailwind CSS, MediaRecorder API, Lucide |
+| **Backend** | Node.js (v20+), Express.js, Axios, Multi-part Form Data |
+| **AI/ML** | Google Gemini (Multi-modal), Faster-Whisper (via VaaS) |
+| **Data/Search** | Supabase (PostgreSQL), SerpApi (Search Indexing) |
+| **Voice Ops** | [VaaS (Official Provider)](https://schallten.github.io/VaaS/) |
+
+---
+
+## 📂 Project Organization
 ```text
 ├── agriculture/
-│   ├── backend/          # Node-Express logic
-│   │   ├── controllers/  # Intent analysis & Transcription handling
-│   │   ├── routes/       # API endpoints (/api/analyze-intent, /api/transcribe)
-│   │   ├── uploads/      # Temporary audio storage (auto-cleaned)
-│   │   └── services/     # Core logic (AI, Mandi, Weather, DB)
-│   ├── frontend/         # React application (Vite template)
-│   │   └── src/          # Components & Premium CSS styles
+│   ├── backend/          # Distributed API logic
+│   │   ├── controllers/  # Request synthesis & orchestrator logic
+│   │   ├── services/     # Multi-provider integrations (VaaS, Gemini, Serp)
+│   │   └── routes/       # Centralized REST endpoints (STT, TTS, Analyze)
+│   ├── frontend/         # High-performance React binary
+│   │   ├── src/          # Micro-components & Adaptive CSS
+│   │   └── hooks/        # Voice capture & audio lifecycle management
 ```
 
 ---
 
-## 🛠️ Setup Procedure
+## ⚙️ Engineering Setup
 
-1. **Backend Configuration**:
-   - `cd agriculture/backend`
-   - Create `.env` from `example.env` and add your `GEMINI_API_KEY` and `SERPAPI_KEY`.
-   - `npm install && npm run dev`
+### 1. API Services (Backend)
+```bash
+cd agriculture/backend
+# Setup Config
+cp example.env .env
+# Required credentials: VAAS_API_KEY, GEMINI_API_KEY, SERPAPI_KEY
+npm install && npm run dev
+```
 
-2. **Frontend Configuration**:
-   - `cd agriculture/frontend`
-   - `npm install && npm run dev`
+### 2. Client Application (Frontend)
+```bash
+cd agriculture/frontend
+npm install && npm run dev
+```
 
 ---
-*Created with ❤️ by schallten*
+*Built with ❤️ by Team Horizon | Hack4Impact Track 2*
+

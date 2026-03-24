@@ -1,76 +1,51 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import axios from 'axios';
+import FormData from 'form-data';
+import fs from 'fs';
 import dotenv from 'dotenv';
 import { logger } from './logger.service.js';
-import fs from 'fs';
+
 dotenv.config();
 
-// Use the same model as ai.service.js — supports multimodal (text + audio)
-const STT_MODEL = 'gemini-2.5-flash-lite';
-
-let sttAI = null;
-if (process.env.GEMINI_API_KEY) {
-  sttAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-} else {
-  logger.warn('GEMINI_API_KEY missing — STT service will not work.');
-}
-
+const VAAS_API_KEY = process.env.VAAS_API_KEY;
+const VAAS_BASE_URL = process.env.VAAS_BASE_URL;
 
 /**
- * Transcribe an audio file using Gemini's multimodal audio understanding.
+ * Transcribe an audio file using VaaS (Voice as a Service).
  * @param {string} filePath - absolute path to the audio file (webm/ogg/wav)
  * @param {string} lang     - 'en' or 'hi'
  * @returns {Promise<string>} - transcribed text
  */
 export const transcribeAudio = async (filePath, lang = 'en') => {
-  if (!sttAI) {
-    throw new Error('Gemini API key not configured');
+  if (!VAAS_API_KEY) {
+    throw new Error('VaaS API key not configured');
   }
 
-  const model = sttAI.getGenerativeModel({ model: STT_MODEL });
+  const formData = new FormData();
+  formData.append('file', fs.createReadStream(filePath));
 
-  // Read audio file and encode to base64
-  const audioBuffer = fs.readFileSync(filePath);
-  const base64Audio = audioBuffer.toString('base64');
-
-  // Determine MIME type from extension
-  const ext = filePath.split('.').pop().toLowerCase();
-  const mimeMap = {
-    webm: 'audio/webm',
-    ogg:  'audio/ogg',
-    wav:  'audio/wav',
-    mp4:  'audio/mp4',
-    m4a:  'audio/mp4',
-  };
-  const mimeType = mimeMap[ext] || 'audio/webm';
-
-  // Auto-detect language: always transcribe in the original spoken language.
-  // Prefix with [LANG:xx] so the frontend can reliably detect the language.
-  const langInstruction =
-    'Listen to this audio and transcribe it exactly as spoken. ' +
-    'If the speaker speaks Hindi, transcribe in Hindi (Devanagari script). ' +
-    'If the speaker speaks English, transcribe in English. ' +
-    'If the speaker mixes both languages, keep Hindi words in Devanagari and English words in Latin script. ' +
-    'Start your response with [LANG:hi] if the primary language is Hindi, or [LANG:en] if English. ' +
-    'After the tag, return ONLY the transcribed text, nothing else.';
-
-  logger.debug(`Transcribing audio | file: ${filePath} | mimeType: ${mimeType} | lang: ${lang}`);
+  logger.debug(`Transcribing audio via VaaS | file: ${filePath} | lang: ${lang}`);
 
   try {
-    const result = await model.generateContent([
-      { text: langInstruction },
-      {
-        inlineData: {
-          mimeType,
-          data: base64Audio,
-        },
+    const response = await axios.post(`${VAAS_BASE_URL}/stt`, formData, {
+      headers: {
+        ...formData.getHeaders(),
+        'X-API-KEY': VAAS_API_KEY,
       },
-    ]);
+    });
 
-    const transcript = result.response.text().trim();
-    logger.info(`Transcription result: "${transcript}"`);
-    return transcript;
+    const transcript = response.data.text || '';
+    logger.info(`VaaS Transcription result: "${transcript}"`);
+
+    // In the original project, the frontend expects [LANG:en] or [LANG:hi] prefix
+    // We'll try to guess if it's Hindi or English to maintain compatibility
+    // Simple heuristic: if it contains Devanagari characters, it's Hindi
+    const isHindi = /[\u0900-\u097F]/.test(transcript);
+    const langTag = isHindi ? '[LANG:hi]' : '[LANG:en]';
+
+    return `${langTag} ${transcript}`;
   } catch (error) {
-    logger.error('Gemini audio transcription failed', error);
+    logger.error('VaaS audio transcription failed', error.response?.data || error.message);
     throw error;
   }
 };
+

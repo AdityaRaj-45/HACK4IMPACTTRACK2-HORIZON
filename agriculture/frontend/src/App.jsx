@@ -8,7 +8,7 @@ import {
   BookOpen, Leaf, BarChart2, Loader2
 } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
-import { analyzeIntent, transcribeAudio } from './services/api';
+import { analyzeIntent, transcribeAudio, textToSpeech } from './services/api';
 
 // ── TRANSLATIONS ──────────────────────────────────────────────
 const T = {
@@ -215,22 +215,28 @@ export default function App() {
   }, [lang]);
 
   // ── TTS ──
-  const speak = (text) => {
-    if (!('speechSynthesis' in window) || !text) return;
-    window.speechSynthesis.cancel();
-    const utt = new SpeechSynthesisUtterance(text);
-    const targetLang = lang === 'hi' ? 'hi-IN' : 'en-US';
-    utt.lang = targetLang;
-    utt.rate = lang === 'hi' ? 0.9 : 1;
-    let voices = voicesRef.current;
-    if (!voices.length) voices = window.speechSynthesis.getVoices();
-    const voice = voices.find(v => v.lang.replace('_', '-') === targetLang)
-      || voices.find(v => v.lang.replace('_', '-').startsWith(lang));
-    if (voice) utt.voice = voice;
-    utt.onstart = () => setIsSpeaking(true);
-    utt.onend   = () => setIsSpeaking(false);
-    utt.onerror = () => setIsSpeaking(false);
-    window.speechSynthesis.speak(utt);
+  const speak = async (text) => {
+    if (!text) return;
+    try {
+      setIsSpeaking(true);
+      const audioBlob = await textToSpeech(text, lang);
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      audio.onended = () => {
+        setIsSpeaking(false);
+        URL.revokeObjectURL(audioUrl);
+      };
+      audio.onerror = () => {
+        setIsSpeaking(false);
+        URL.revokeObjectURL(audioUrl);
+      };
+      await audio.play();
+    } catch (err) {
+      console.error('TTS Playback failed:', err);
+      setIsSpeaking(false);
+      // Fallback to browser TTS if VaaS fails? 
+      // For now, just stop speaking state.
+    }
   };
 
   // ── Stream helpers ──
