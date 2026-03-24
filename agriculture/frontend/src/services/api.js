@@ -10,16 +10,21 @@ const apiClient = axios.create({
 });
 
 export const textToSpeech = async (text, lang = 'en') => {
+  console.log(`[TTS Req] text: "${text.substring(0, 30)}..." lang: ${lang}`);
   const response = await apiClient.post('/tts', { text, lang }, { responseType: 'blob' });
+  console.log(`[TTS Res] Response received (blob type: ${response.data.type})`);
   return response.data;
 };
 
-export const analyzeIntent = async (text, lang, type = 'chat') => {
+export const analyzeIntent = async (text, lang, type = 'chat', coords = null) => {
+  console.log(`[Analyze Req] text: "${text.substring(0, 30)}..." lang: ${lang} type: ${type}`);
   const response = await apiClient.post('/analyze-intent', {
     text,
     lang,
     type,
+    coords,
   });
+  console.log('[Analyze Res] Result:', response.data);
   return response.data;
 };
 
@@ -30,6 +35,7 @@ export const analyzeIntent = async (text, lang, type = 'chat') => {
  * @returns {Promise<string>} - transcribed text
  */
 export const transcribeAudio = async (audioBlob, lang = 'en') => {
+  console.log(`[STT Req] blob type: ${audioBlob.type} size: ${audioBlob.size} bytes lang: ${lang}`);
   const formData = new FormData();
   // Use .webm extension — Chrome MediaRecorder default
   formData.append('audio', audioBlob, `recording.${getExtension(audioBlob.type)}`);
@@ -42,10 +48,12 @@ export const transcribeAudio = async (audioBlob, lang = 'en') => {
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
+    console.error('[STT Res Error]', err);
     throw new Error(err.error || `Transcription failed: ${response.status}`);
   }
 
   const data = await response.json();
+  console.log(`[STT Res] Transcript: "${data.transcript}"`);
   return data.transcript;
 };
 

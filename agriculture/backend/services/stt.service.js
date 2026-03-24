@@ -22,6 +22,7 @@ export const transcribeAudio = async (filePath, lang = 'en') => {
 
   const formData = new FormData();
   formData.append('file', fs.createReadStream(filePath));
+  formData.append('language', lang);
 
   logger.debug(`Transcribing audio via VaaS | file: ${filePath} | lang: ${lang}`);
 

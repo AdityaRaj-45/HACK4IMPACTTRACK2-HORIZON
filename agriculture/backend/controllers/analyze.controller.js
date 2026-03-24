@@ -1,4 +1,4 @@
-import { classifyIntent } from '../services/ai.service.js';
+import { classifyIntent, analyzeText } from '../services/ai.service.js';
 import { getMandiPrice } from '../services/mandi.service.js';
 import { getWeatherForecast } from '../services/weather.service.js';
 import { logQuery } from '../services/db.service.js';
@@ -6,12 +6,22 @@ import { logger } from '../services/logger.service.js';
 
 export const analyzeIntent = async (req, res) => {
   try {
-    const { text, lang, coords } = req.body;
-    logger.info(`Analyzing intent for: "${text}"`, { lang, coords });
+    const { text, lang, coords, type = 'chat' } = req.body;
+    logger.info(`Analyzing intent for: "${text.substring(0, 50)}..."`, { lang, coords, type });
     
     if (!text) {
       logger.warn("Empty text query received");
       return res.status(400).json({ error: "Text is required" });
+    }
+
+    // For news generation or general LLM tasks, use analyzeText directly
+    if (type !== 'chat') {
+      logger.info(`Direct AI analysis for type: ${type}`);
+      const responseText = await analyzeText(text);
+      return res.json({
+        intent: type,
+        response: responseText
+      });
     }
 
     const aiResult = await classifyIntent(text, lang || 'en');

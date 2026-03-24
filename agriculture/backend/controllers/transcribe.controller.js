@@ -48,7 +48,8 @@ export const transcribeAudioController = async (req, res) => {
 
   try {
     const transcript = await transcribeAudio(filePath, lang);
-
+    logger.info(`Transcription success: "${transcript}"`);
+    
     // Clean up temp file after transcription
     fs.unlink(filePath, (err) => {
       if (err) logger.warn(`Could not delete temp audio file: ${filePath}`);

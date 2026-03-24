@@ -157,10 +157,13 @@ export default function App() {
     return () => { if (cycleRef.current) clearInterval(cycleRef.current); };
   }, [news.length]);
 
-  // ── Speech recognition setup ──
+  // ── Speech recognition (Browser-based, optional fallback) ──
   useEffect(() => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { setMicError(true); return; }
+    if (!SR) {
+      console.warn('Browser SpeechRecognition not supported - using MediaRecorder only');
+      return;
+    }
     const rec = new SR();
     rec.continuous = true; rec.interimResults = true;
     rec.onstart  = () => { setIsListening(true); setMicError(false); };
@@ -172,7 +175,13 @@ export default function App() {
       }
       setTextInput(finalRef.current + interim);
     };
-    rec.onerror = (e) => { setIsListening(false); if (e.error !== 'aborted') setMicError(true); };
+    rec.onerror = (e) => {
+      setIsListening(false);
+      if (e.error !== 'aborted') {
+        console.error('SpeechRecognition error:', e.error);
+        // We only set micError here if we were actually trying to use it
+      }
+    };
     rec.onend   = () => setIsListening(false);
     recRef.current = rec;
     return () => recRef.current?.abort();
@@ -190,7 +199,7 @@ export default function App() {
       ? `तुम एक भारतीय कृषि समाचार विशेषज्ञ हो। मार्च 2026 के संदर्भ में 5 ताज़ा खेती समाचार बनाओ। ONLY return a valid JSON array, no markdown: [{"cat":"योजना|चेतावनी|बाज़ार|कीट|सुझाव","tag":"2-word label","title":"headline","body":"2 sentences","urgent":true|false}]`
       : `You are an Indian agricultural news expert. March 2026 context. Generate 5 realistic farming news items. ONLY return a valid JSON array, no markdown: [{"cat":"Scheme|Alert|Market|Pest|Tip","tag":"2-word label","title":"headline","body":"2 sentences","urgent":true|false}]`;
     try {
-      const data = await analyzeIntent(prompt, currentLang);
+      const data = await analyzeIntent(prompt, currentLang, 'news');
       const raw  = (data?.response || '').replace(/```json|```/gi, '').trim();
       const start = raw.indexOf('[');
       const end   = raw.lastIndexOf(']');
@@ -249,7 +258,7 @@ export default function App() {
 
   // ── Chat mutation ──
   const mutation = useMutation({
-    mutationFn: ({ text, currentLang, coords }) => analyzeIntent(text, currentLang, coords),
+    mutationFn: ({ text, currentLang, coords }) => analyzeIntent(text, currentLang, 'chat', coords),
     onSuccess: (data) => { setMessages(p => [...p, { role: 'system', content: data.response }]); speak(data.response); },
     onError:   ()     => {
       const m = lang === 'hi' ? 'माफ करें, कुछ गड़बड़ हुई। दोबारा कोशिश करें।' : 'Something went wrong. Please try again.';
@@ -270,7 +279,16 @@ export default function App() {
     setMicError(false);
     setTranscribeError(false);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error('getUserMedia not supported');
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        }
+      });
       streamRef.current = stream;
       const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
         ? 'audio/webm;codecs=opus'

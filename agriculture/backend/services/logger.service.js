@@ -33,7 +33,15 @@ const log = (level, message, meta = null) => {
   });
   
   // Also console log for dev environment
-  console.log(`[${level.toUpperCase()}] ${message}`);
+  let consoleMessage = `[${level.toUpperCase()}] ${message}`;
+  if (meta) {
+    if (meta instanceof Error) {
+      consoleMessage += ` | Error: ${meta.message}`;
+    } else {
+      consoleMessage += ` | ${JSON.stringify(meta)}`;
+    }
+  }
+  console.log(consoleMessage);
 };
 
 export const logger = {

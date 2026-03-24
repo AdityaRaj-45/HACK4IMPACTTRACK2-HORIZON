@@ -22,11 +22,12 @@ export const textToSpeech = async (text, lang = 'en') => {
   // Map language to a voice ID if needed. 
   // VaaS default is 'en_us_ava'. For Hindi, we might need another one if supported.
   // Assuming 'en_us_ava' is okay for now or VaaS handles it.
-  const voice = lang === 'hi' ? 'hi_in_madhur' : 'en_us_ava'; // Guessing a Hindi voice name or just using default
+  const voice = lang === 'hi' ? 'hi_in_madhur' : 'en_us_ava';
 
   const formData = new FormData();
   formData.append('text', text);
   formData.append('voice', voice);
+  formData.append('language', lang);
 
   logger.debug(`Generating TTS via VaaS | lang: ${lang} | voice: ${voice}`);
 

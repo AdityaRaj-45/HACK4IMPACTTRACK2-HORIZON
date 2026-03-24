@@ -15,6 +15,7 @@ export const textToSpeechController = async (req, res) => {
       'Content-Type': 'audio/mpeg',
       'Content-Length': audioData.length,
     });
+    logger.info(`TTS success: ${audioData.length} bytes delivered`);
     return res.send(audioData);
   } catch (error) {
     logger.error('TTS controller error', error);
